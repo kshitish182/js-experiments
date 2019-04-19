@@ -8,10 +8,17 @@
 
 .image-container{
 	width:2100px;
-	margin-left: 0px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
 }
-.image-container img{
+
+.image-container li{
 	float:left;
+}
+
+img{
+	display: inline-block;
 	width: 700px;
 	height: 500px;
 }
