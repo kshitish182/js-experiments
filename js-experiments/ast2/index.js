@@ -6,15 +6,15 @@ const ctx = canvas.getContext('2d');
 let flag;
 
 class Ball {
-	constructor(centerX , centerY , radius , color, canvasWidth , canvasHeight){
+	constructor(centerX , centerY , radius , color , ballVelocityX , ballVelocityY){
 		this.centerX = centerX;
 		this.centerY = centerY;
 		this.radius = radius;
 		this.color = color;
-		this.canvasWidth = 600;
-		this.canvasHeight = 800;
-		this.ballVelocityX = 8;
-		this.ballVelocityY = 8;
+		this.canvasWidth = 1000;
+		this.canvasHeight = 600;
+		this.ballVelocityX = ballVelocityX;
+		this.ballVelocityY = ballVelocityY;
 	}
 
 	plotCircle() {
@@ -28,12 +28,17 @@ class Ball {
 
 	moveCircle() {
 		this.plotCircle();
-		if((this.centerX + this.radius) >= this.canvasWidth || (this.centerX-this.radius) <= 0 ){
-
+		if((this.centerX + this.radius) > this.canvasWidth || (this.centerX-this.radius) < 0 ){
 				this.ballVelocityX = -this.ballVelocityX;
+				if(this.centerX -this.radius <= this.ballVelocityX+this.radius){
+					this.ballVelocityX = -(this.centerX-this.radius);
+				}
 		} 
-		if((this.centerY + this.radius) >= this.canvasHeight || (this.centerY-this.radius) <= 0){
+		if((this.centerY + this.radius) > this.canvasHeight || (this.centerY-this.radius) < 0){
 			this.ballVelocityY = - this.ballVelocityY;
+			if(this.centerY - this.radius <= this.ballVelocityY + this.radius){
+				this.ballVelocityY = -(this.centerY - this.radius);
+			}
 		}
 			this.centerY += this.ballVelocityY;
 			this.centerX += this.ballVelocityX;
@@ -42,8 +47,11 @@ class Ball {
 
 let xCor;
 let yCor;
-let ballNumber = 10 ;
-let ballRadius = 50;
+let collisionFlag;
+let ballNumber = 10; 
+let ballRadius = 25;
+let ballSpeedX = 8;
+let ballSpeedY = 8;
 let ball = [];
 
 const centerDistance = (x1Cord , y1Cord , x2Cord , y2Cord) =>{
@@ -52,74 +60,89 @@ const centerDistance = (x1Cord , y1Cord , x2Cord , y2Cord) =>{
 	return Math.sqrt(distanceX + distanceY);
 }
 
-
-for(let i = 0; i < ballNumber ; i++){
-	xCor = ballRadius + parseInt(Math.random() * 500);
-	yCor = ballRadius + parseInt(Math.random() * 700);
-
-	console.log(xCor , yCor);
-	
-	if(i !== 0){
-		for(let j = 0 ; i<ballNumber ; j++){
-			if(centerDistance(ball[j].centerX, ball[j].centerY, xCor, yCor) - 2*ball[j].radius){
-				flag=1;
-				break;
-			}	
-		}
-		if(flag === 1){
-			i--;
-			continue;
+const checkOverlap = () => {
+	for(let j=0; j < ball.length ; j++){
+		if(centerDistance(ball[j].centerX, ball[j].centerY, xCor, yCor) <= 2*ball[j].radius){
+			flag = 1;
 		}
 	}
-	// if(i !== 0 ){
-	// 	for(let j=0; j< ballNumber; j++){
-	// 		  let x2Cor = ball[j].centerX;
-	// 			let y2Cor = ball[j].centerY;
-	// 		if( centerDistance(x2Cor, y2Cor,xCor,yCor) - 2*ball[j].radius < 0 ){
-	// 			xCor =ballRadius + parseInt(Math.random() * 700);
-	// 			yCor = ballRadius + parseInt(Math.random() * 500);
-	// 			j = -1;
-	// 		}
-	// 		break;
-	// 	}
-	// }
-
-  ball[i] = new Ball(xCor, yCor, 25, 'red');
 }
 
+const creatBallObj = () => {
+	let flag = 0;
+	for(let i = 0; i < ballNumber ; i++){
+		xCor = ballRadius + ballSpeedX + parseInt(Math.random() * 800);
+		yCor = ballRadius + ballSpeedY +  parseInt(Math.random() * 400);
+			checkOverlap();
+		if (flag === 1){
+			i--;
+			continue;
+		}else{
+ 			ball[i] = new Ball(xCor, yCor, ballRadius , 'red', ballSpeedX , ballSpeedY);
+ 		}
+	}
+}
 
 const animate = () => {
-	 	ctx.clearRect(0 , 0, 1000, 800);
-	 	for(let i=0 ; i < ballNumber; i++){
-	 		ball[i].moveCircle();
-	 }
-	 collision();
+	ctx.clearRect(0 , 0, 1000, 800);
+	for(let i=0 ; i < ballNumber; i++){
+		ball[i].moveCircle();
+	}
+	collision();
+	if(collisionFlag){
+		setTimeout( resetSpeed() , 1000);
+	}
 	window.requestAnimationFrame(animate);
-
 }
+
+const resetSpeed = () =>{
+	for(let i = 0 ; i < ballNumber ; i++){
+		if(Math.sign(ball[i].ballVelocityX) === -1){
+			ball[i].ballVelocityX = -ballSpeedX;
+		}else{
+			ball[i].ballVelocityX = ballSpeedX;
+		}
+
+		if(Math.sign(ball[i].ballVelocityY) === -1){
+			ball[i].ballVelocityY = -ballSpeedY;
+		}else{
+			ball[i].ballVelocityY = ballSpeedY;
+		}
+	}
+}
+
+
 
 const collision = () =>{
 	for(let i = 0 ; i < ballNumber ; i++){
 		for(let j=i+1 ; j< ballNumber ; j++){
-			// let distanceX = Math.pow((ball[i].centerX - ball[j].centerX),2);
-			// let distanceY = Math.pow((ball[i].centerY - ball[j].centerY),2);
-				let colDistance = centerDistance(ball[i].centerX , ball[i].centerY , ball[j].centerX, ball[j].centerY);
-				if(colDistance < ( ball[i].radius + ball[j].radius )){
-					ball[i].ballVelocityX = -ball[i].ballVelocityX;
-					ball[i].ballVelocityY = -ball[i].ballVelocityY;
-					ball[j].ballVelocityX = -ball[j].ballVelocityX;
-					ball[j].ballVelocityY = -ball[j].ballVelocityY;
+			let colDistance = centerDistance(ball[i].centerX , ball[i].centerY , ball[j].centerX, ball[j].centerY);
+			if(colDistance <= ( ball[i].radius + ball[j].radius )){
+				ball[i].ballVelocityX =  -ball[i].ballVelocityX;
+				ball[i].ballVelocityY =  -ball[i].ballVelocityY;
+				ball[j].ballVelocityX =  -ball[j].ballVelocityX;
+				ball[j].ballVelocityY =  -ball[j].ballVelocityY;
+				
+				if(ball[i].radius + ball[j].radius + ball[i].centerX > ball[j].centerX
+																			&&
+					ball[i].radius + ball[j].radius + ball[j].centerX > ball[i].centerX
+																			&&
+					ball[i].radius + ball[j].radius + ball[i].centerY > ball[i].centerX 
+																			&&
+					ball[i].radius + ball[j].radius + ball[j].centerY > ball[j].centerY)
+				{
+						console.log('overlap');
+						if(Math.sign(ball[i].ballVelocityX) === -1){
+								ball[i].ballVelocityX = -ball[i].radius;
+							}
+							
+							collisionFlag = true;
 				}
 			}
 		}
 	}
+}
 
 
-
+creatBallObj();
 animate();
-
-
-
-
-
-
