@@ -48,10 +48,10 @@ class Ball {
 let xCor;
 let yCor;
 let collisionFlag;
-let ballNumber = 10; 
-let ballRadius = 25;
-let ballSpeedX = 8;
-let ballSpeedY = 8;
+let ballNumber = 500; 
+let ballRadius = 5;
+let ballSpeedX = 3;
+let ballSpeedY = 3;
 let ball = [];
 
 const centerDistance = (x1Cord , y1Cord , x2Cord , y2Cord) =>{
@@ -60,7 +60,7 @@ const centerDistance = (x1Cord , y1Cord , x2Cord , y2Cord) =>{
 	return Math.sqrt(distanceX + distanceY);
 }
 
-const checkOverlap = () => {
+const checkOverlap = (xCor, yCor) => {
 	for(let j=0; j < ball.length ; j++){
 		if(centerDistance(ball[j].centerX, ball[j].centerY, xCor, yCor) <= 2*ball[j].radius){
 			flag = 1;
@@ -73,7 +73,7 @@ const creatBallObj = () => {
 	for(let i = 0; i < ballNumber ; i++){
 		xCor = ballRadius + ballSpeedX + parseInt(Math.random() * 800);
 		yCor = ballRadius + ballSpeedY +  parseInt(Math.random() * 400);
-			checkOverlap();
+			checkOverlap(xCor,yCor);
 		if (flag === 1){
 			i--;
 			continue;
